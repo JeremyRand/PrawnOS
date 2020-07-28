@@ -61,6 +61,11 @@ then
     echo "No Filesystem resources path supplied"
     exit 1
 fi
+if [ -z "$7" ]
+then
+    echo "No distro-morph supplied"
+    exit 1
+fi
 
 KVER=$1
 DEBIAN_SUITE=$2
@@ -68,6 +73,7 @@ BASE=$3
 PRAWNOS_ROOT=$4
 PRAWNOS_SHARED_SCRIPTS=$5
 PRAWNOS_FILESYSTEM_RESOURCES=$6
+PRAWNOS_DISTRO_MORPH=$7
 
 outmnt=$(mktemp -d -p "$(pwd)")
 
@@ -212,6 +218,31 @@ cp $build_resources_apt/deb.prawnos.com.gpg.key $outmnt/InstallResources/
 chroot $outmnt apt-key add /InstallResources/deb.prawnos.com.gpg.key
 chroot $outmnt apt update
 
+if [ "$PRAWNOS_DISTRO_MORPH" = "kicksecure" ]
+then
+    # Install Whonix as an additional source (for Kicksecure)
+    cp $build_resources_apt/whonix.list $outmnt/etc/apt/sources.list.d/
+    sed -i -e "s/suite/$DEBIAN_SUITE/g" $outmnt/etc/apt/sources.list.d/whonix.list
+
+    # Bring in the deb.whonix.org gpg keyring
+    # Available for download at https://www.whonix.org/patrick.asc
+    cp $build_resources_apt/deb.whonix.org.gpg.key $outmnt/InstallResources/
+    chroot $outmnt apt-key add /InstallResources/deb.whonix.org.gpg.key
+    chroot $outmnt apt update
+
+    # Enable Kicksecure in installer
+    sed -i -e 's/$KICKSECURE/1/g' "$outmnt/InstallPrawnOS.sh"
+    sed -i -e 's/$KICKSECURE/1/g' "$outmnt/InstallResources/InstallPackages.sh"
+elif [ "$PRAWNOS_DISTRO_MORPH" = "debian" ]
+then
+    # Disable Kicksecure in installer
+    sed -i -e 's/$KICKSECURE/0/g' "$outmnt/InstallPrawnOS.sh"
+    sed -i -e 's/$KICKSECURE/0/g' "$outmnt/InstallResources/InstallPackages.sh"
+else
+    echo "Unsupported distro-morph $PRAWNOS_DISTRO_MORPH; must be debian or kicksecure"
+    exit 1
+fi
+
 #Setup the locale
 cp $build_resources/locale.gen $outmnt/etc/locale.gen
 chroot $outmnt locale-gen
@@ -249,6 +280,13 @@ apt_install $PRAWNOS_ROOT $outmnt false ${lxqt_debs_download[@]}
 
 #Download the gnome packages to be installed by Install.sh:
 apt_install $PRAWNOS_ROOT $outmnt false ${gnome_debs_download[@]}
+
+if [ "$PRAWNOS_DISTRO_MORPH" = "kicksecure" ]
+then
+    # Download the kicksecure packages to be installed by Install.sh:
+    apt_install $PRAWNOS_ROOT $outmnt false ${kicksecure_debs_download[@]}
+    apt_install $PRAWNOS_ROOT $outmnt false ${kicksecure_xfce_debs_download[@]}
+fi
 
 
 # we want to include all of our built packages in the apt cache for installation later, but we want to let apt download dependencies

@@ -163,7 +163,7 @@ install() {
         read -r -p "Install a desktop environment and the supporting packages? [Y/n]" ins
         case $ins in
             [Yy]* ) install_packages $INSTALL_MOUNT; break;;
-            [Nn]* ) break;;
+            [Nn]* ) install_morph_cli; break;;
             * ) echo "Please answer y or n";;
         esac
     done
@@ -275,8 +275,8 @@ expand() {
     while true; do
         read -r -p "Install a desktop environment and the supporting packages? [Y/n]" ins
         case $ins in
-            [Yy]* ) /InstallResources/InstallPackages.sh; reboot;;
-            [Nn]* ) exit;;
+            [Yy]* ) /InstallResources/InstallPackages.sh; install_morph_cli; install_morph_gui; reboot;;
+            [Nn]* ) install_morph_cli; exit;;
             * ) echo "Please answer y or n";;
         esac
     done
@@ -292,6 +292,8 @@ install_packages() {
     mount --rbind /sys $TARGET_MOUNT/sys/
     mount --rbind /dev $TARGET_MOUNT/dev/
     chroot $TARGET_MOUNT/ ./InstallResources/InstallPackages.sh
+    chroot $TARGET_MOUNT/ install_morph_cli
+    chroot $TARGET_MOUNT/ install_morph_gui
     umount $TARGET_MOUNT/proc/
     mount --make-rprivate /sys
     mount --make-rprivate /dev
@@ -300,6 +302,28 @@ install_packages() {
 
 }
 
+# Install Distro-Morph
+install_morph_cli() {
+    if [ "$KICKSECURE" = "1" ]
+    then
+        addgroup --system console
+        adduser user console
+        apt install -y ${kicksecure_debs_download[@]}
+        rm /etc/apt/sources.list
+        touch /etc/apt/sources.list
+    fi
+}
+
+# Install Distro-Morph GUI
+
+install_morph_gui() {
+    if [ "$KICKSECURE" = "1" ]
+    then
+        apt install -y ${xfce_debs_download[@]}
+    fi
+
+    apt clean -y && apt autoremove --purge -y
+}
 
 #call the main function, script technically starts here
 #Organized this way so that main can come before the functions it calls

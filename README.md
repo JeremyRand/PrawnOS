@@ -271,6 +271,8 @@ To begin with:
 
 You can use the environment variable `PRAWNOS_SUITE` to use a Debian suite other than `Buster`.  For example, to use Debian stretch, you can build with `sudo PRAWNOS_SUITE=stretch make image`.  Note that only `stretch` and `buster` have been tested.
 
+You can use the environment variable `PRAWNOS_DISTRO_MORPH=kicksecure` to make PrawnOS use [Kicksecure](https://www.whonix.org/wiki/Kicksecure) instead of Debian.
+
 You can use the environment variable `PRAWNOS_DEBOOTSTRAP_MIRROR` to use a non-default Debian mirror with debootstrap.  For example, to use [Debian's Tor onion service mirror](https://onion.debian.org/) with debootstrap, you can build with `sudo PRAWNOS_DEBOOTSTRAP_MIRROR=http://vwakviie2ienjx6t.onion/debian make image`.
 
 

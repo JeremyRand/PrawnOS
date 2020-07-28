@@ -190,4 +190,15 @@ prawnos_base_debs_prebuilt_install=(
     mosys
 )
 
+# Kicksecure packages
+kicksecure_debs_download=(
+    adduser
+    kicksecure-cli-host
+    sudo
+)
+
+kicksecure_xfce_debs_download=(
+    kicksecure-xfce-host
+)
+
 # ====================================== END Package Lists =======================================

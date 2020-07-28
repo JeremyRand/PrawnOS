@@ -23,7 +23,14 @@ source $DIR/package_lists.sh
 cat $DIR/icons/ascii-icon.txt
 echo ""
 
-while true; do
+DE=none
+
+if [ "$KICKSECURE" = "1" ]
+then
+    DE=xfce
+fi
+
+while [ "$DE" = "none" ]; do
     read -r -p "Install (X)fce4, (L)xqt or (G)nome, if unsure choose (X)fce: " XL
     case $XL in
         [Gg]* ) DE=gnome; break;;
@@ -140,8 +147,6 @@ cp -rf $DIR/headphone-acpi-toggle /etc/acpi/events/headphone-acpi-toggle
 mkdir /etc/X11/xorg.conf.d/
 cp -rf $DIR/30-touchpad.conf /etc/X11/xorg.conf.d/
 
-apt clean -y && apt autoremove --purge -y
-
 #reload the CA certificate symlinks
 update-ca-certificates --fresh
 
@@ -169,8 +174,13 @@ done
 
 #Force a safe username
 while true; do
-    echo "-----Enter new username:-----"
-    read -r username
+    if [ "$KICKSECURE" = "1" ]
+    then
+        username=user
+    else
+        echo "-----Enter new username:-----"
+        read -r username
+    fi
     #ensure no whitespace
     case $username in *\ *) echo usernames may not contain whitespace;;  *) break;; esac
 done
