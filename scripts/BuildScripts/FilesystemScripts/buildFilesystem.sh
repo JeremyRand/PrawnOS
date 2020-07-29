@@ -120,7 +120,18 @@ apt_install() {
   shift
   package_list=("$@")
 
-  chroot $outmnt apt install -y -d ${package_list[@]}
+  # apt download can fail occasionally due to temporary network issues;
+  # retrying allows us to avoid starting over.
+  MAX_TRIES=5
+  for i in {1..${MAX_TRIES}}; do
+    chroot $outmnt apt install -y -d ${package_list[@]} && break
+    echo "Download failed on try $i."
+    if [ "$i" = "$MAX_TRIES" ]; then
+      echo "Download failed too many times, giving up."
+      exit 1
+    fi
+  done
+
   cp "$outmnt/var/cache/apt/archives/"* "$PRAWNOS_ROOT/build/chroot-apt-cache/" || true
   if [ "$install" = true ]; then
       chroot $outmnt apt install -y ${package_list[@]}
