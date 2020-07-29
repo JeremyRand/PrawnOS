@@ -124,7 +124,7 @@ apt_install() {
   # retrying allows us to avoid starting over.
   MAX_TRIES=5
   for i in {1..${MAX_TRIES}}; do
-    chroot $outmnt apt install -y -d ${package_list[@]} && break
+    chroot $outmnt apt install -y -d ${package_list[@]} && break || true
     echo "Download failed on try $i."
     if [ "$i" = "$MAX_TRIES" ]; then
       echo "Download failed too many times, giving up."
