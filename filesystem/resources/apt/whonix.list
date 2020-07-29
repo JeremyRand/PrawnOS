@@ -1,1 +1,2 @@
-deb https://deb.whonix.org suite main
+# TODO: stop using testers once https://github.com/Whonix/anon-meta-packages/commit/c7ce9cb796502a06beecbdeae801b9ee422259dd has migrated to stable.
+deb https://deb.whonix.org suite-testers main
